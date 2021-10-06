@@ -9,7 +9,7 @@
       v-model.trim="newTask"
       @keyup.enter="addTask"
     />
-    <div class="main" v-if="!isListEmpty">
+    <div class="main" v-if="!isEditListEmpty">
       <input
         class="toggle-all"
         type="checkbox"
@@ -19,8 +19,8 @@
       <label />
     </div>
     <TodoList
-      :list="list"
-      v-if="!isListEmpty"
+      :list="filterList"
+      v-if="!isEditListEmpty"
       @toggleTask="updateToggleAllTasks"
       @removeItem="removeTask"
     >
@@ -29,7 +29,7 @@
       </template>
     </TodoList>
     <TodoFooter
-      v-if="!isListEmpty"
+      v-if="!isEditListEmpty"
       :count="uncompleteTasks"
       @clearCompleted="removeCompletedTasks"
       :hideClearButton="!hasSomeTaskCompleted"
@@ -38,29 +38,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Watch, Vue } from "vue-property-decorator";
 import TodoList from "@/components/TodoList.vue";
 import TodoItem from "@/components/TodoItem.vue";
 import TodoFooter from "@/components/TodoFooter.vue";
 import { ITodoItem } from "@/models/ITodoItem";
 
-const inputList = [
-  {
-    id: "0",
-    task: "task 0",
-    isCompleted: false,
-  },
-  {
-    id: "1",
-    task: "task 1",
-    isCompleted: true,
-  },
-  {
-    id: "2",
-    task: "task 2",
-    isCompleted: false,
-  },
-];
+const TASK_STATUS_FILTER = {
+  COMPLETED: "completed",
+  ACTIVE: "active",
+  ALL: "all",
+};
 
 @Component({
   components: {
@@ -70,69 +58,103 @@ const inputList = [
   },
 })
 export default class TodoApp extends Vue {
-  list: ITodoItem[] = inputList;
+  @Prop({ type: Array }) readonly list!: ITodoItem[];
+
+  @Prop({
+    type: String,
+  })
+  readonly status!: string;
+
+  editList: ITodoItem[] = [];
 
   checkedAllTasks = false;
 
   newTask = "";
 
-  get isListEmpty(): boolean {
-    return this.list.length === 0;
+  constructor() {
+    super();
+    this.editList = this.list;
+  }
+
+  get filterList(): ITodoItem[] {
+    if (!this.status || this.status === TASK_STATUS_FILTER.ALL) {
+      return this.editList;
+    }
+    let status: boolean;
+    if (this.status === TASK_STATUS_FILTER.COMPLETED) {
+      status = true;
+    } else if (this.status === TASK_STATUS_FILTER.ACTIVE) {
+      status = false;
+    }
+    return this.editList.filter(
+      (item: ITodoItem) => item.isCompleted === status
+    );
+  }
+
+  get isEditListEmpty(): boolean {
+    return this.editList.length === 0;
   }
 
   get uncompleteTasks(): number {
-    return this.list.filter((item: ITodoItem) => !item.isCompleted).length;
+    return this.editList.filter((item: ITodoItem) => !item.isCompleted).length;
   }
 
   get hasSomeTaskCompleted(): boolean {
-    return this.list.some((item: ITodoItem) => item.isCompleted);
+    return this.editList.some((item: ITodoItem) => item.isCompleted);
+  }
+
+  @Watch("list")
+  onListChange(): void {
+    this.editList = this.list;
   }
 
   toggleAllTasks(): void {
-    this.list = this.list.map((item: ITodoItem) => ({
+    this.editList = this.editList.map((item: ITodoItem) => ({
       ...item,
       isCompleted: this.checkedAllTasks,
     }));
   }
 
   removeCompletedTasks(): void {
-    this.list = this.list.filter((item: ITodoItem) => !item.isCompleted);
+    this.editList = this.editList.filter(
+      (item: ITodoItem) => !item.isCompleted
+    );
     this.checkedAllTasks = false;
   }
 
   updateToggleAllTasks(item: ITodoItem): void {
     this._updateTask(item);
-    this.checkedAllTasks = !this.list.some(
+    this.checkedAllTasks = !this.editList.some(
       (item: ITodoItem) => !item.isCompleted
     );
   }
 
   private _updateTask(newItem: ITodoItem): void {
-    const index = this.list.findIndex(
+    const index = this.editList.findIndex(
       (item: ITodoItem) => item.id === newItem.id
     );
-    this.list[index] = newItem;
-    this.list = [...this.list];
+    this.editList[index] = newItem;
+    this.editList = [...this.editList];
   }
 
   addTask(): void {
     if (this.newTask.length) {
       const item: ITodoItem = {
-        id: `${this.list.length + 1}`,
+        id: `${this.editList.length + 1}`,
         task: this.newTask,
         isCompleted: false,
       };
-      this.list = [...this.list, item];
+      this.editList = [...this.editList, item];
       this.newTask = "";
     }
   }
 
   removeTask(removeItem: ITodoItem): void {
-    const index = this.list.findIndex(
+    const index = this.editList.findIndex(
       (item: ITodoItem) => item.id === removeItem.id
     );
-    this.list.splice(index, 1);
-    this.list = [...this.list];
+    this.editList.splice(index, 1);
+    this.editList = [...this.editList];
   }
 }
 </script>

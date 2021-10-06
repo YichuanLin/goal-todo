@@ -10,10 +10,15 @@ const routes: Array<RouteConfig> = [
     name: "Home",
     component: Home,
   },
+  {
+    path: "/:status",
+    component: Home,
+  },
 ];
 
 const router = new VueRouter({
   routes,
+  linkActiveClass: "selected",
 });
 
 export default router;

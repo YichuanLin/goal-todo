@@ -4,9 +4,9 @@
       <strong>{{ count }}</strong> {{ "item" | pluralize(count) }} left
     </label>
     <ul class="filters">
-      <li><a>All</a></li>
-      <li><a>Active</a></li>
-      <li><a>Completed</a></li>
+      <li><router-link to="/" exact>All</router-link></li>
+      <li><router-link to="/active">Active</router-link></li>
+      <li><router-link to="/completed">Completed</router-link></li>
     </ul>
     <button
       :class="{ hidden: hideClearButton }"
