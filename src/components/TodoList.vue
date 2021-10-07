@@ -63,7 +63,7 @@ export default class TodoList extends Vue {
     return this._findItemById(id);
   }
 
-  @Emit("addItem")
+  @Emit("saveItem")
   saveItem({ id, value }: IAddItem): ITodoItem {
     const saveItem = this._findItemById(id);
 

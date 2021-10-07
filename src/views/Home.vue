@@ -16,33 +16,6 @@ export default {
   data() {
     return {
       status: null,
-      list: [
-        {
-          id: "0",
-          task: "task 0",
-          isCompleted: false,
-        },
-        {
-          id: "1",
-          task: "task 1",
-          isCompleted: true,
-        },
-        {
-          id: "2",
-          task: "task 2",
-          isCompleted: false,
-        },
-        {
-          id: "3",
-          task: "task 3",
-          isCompleted: false,
-        },
-        {
-          id: "4",
-          task: "task 4",
-          isCompleted: true,
-        },
-      ],
     };
   },
   watch: {

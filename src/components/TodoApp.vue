@@ -23,10 +23,8 @@
       v-if="!isEditListEmpty"
       @toggleTask="updateToggleAllTasks"
       @removeItem="removeTask"
+      @saveItem="saveItem"
     >
-      <template #default="slotProps">
-        <TodoItem :inputItem="slotProps.item" />
-      </template>
     </TodoList>
     <TodoFooter
       v-if="!isEditListEmpty"
@@ -38,17 +36,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import TodoList from "@/components/TodoList.vue";
 import TodoItem from "@/components/TodoItem.vue";
 import TodoFooter from "@/components/TodoFooter.vue";
 import { ITodoItem } from "@/models/ITodoItem";
-
-const TASK_STATUS_FILTER = {
-  COMPLETED: "completed",
-  ACTIVE: "active",
-  ALL: "all",
-};
+import { IAddItem, ICheckedStatus } from "@/models/ITodoEdit";
 
 @Component({
   components: {
@@ -58,103 +51,75 @@ const TASK_STATUS_FILTER = {
   },
 })
 export default class TodoApp extends Vue {
-  @Prop({ type: Array }) readonly list!: ITodoItem[];
-
   @Prop({
     type: String,
   })
   readonly status!: string;
 
-  editList: ITodoItem[] = [];
-
   checkedAllTasks = false;
 
   newTask = "";
 
-  constructor() {
-    super();
-    this.editList = this.list;
-  }
-
   get filterList(): ITodoItem[] {
-    if (!this.status || this.status === TASK_STATUS_FILTER.ALL) {
-      return this.editList;
-    }
-    let status: boolean;
-    if (this.status === TASK_STATUS_FILTER.COMPLETED) {
-      status = true;
-    } else if (this.status === TASK_STATUS_FILTER.ACTIVE) {
-      status = false;
-    }
-    return this.editList.filter(
-      (item: ITodoItem) => item.isCompleted === status
-    );
+    return this.$store.getters.filterTodoList(this.status);
   }
 
   get isEditListEmpty(): boolean {
-    return this.editList.length === 0;
+    return this.$store.getters.isTodoListEmpty;
   }
 
   get uncompleteTasks(): number {
-    return this.editList.filter((item: ITodoItem) => !item.isCompleted).length;
+    return this.$store.getters.uncompleteTasks;
   }
 
   get hasSomeTaskCompleted(): boolean {
-    return this.editList.some((item: ITodoItem) => item.isCompleted);
-  }
-
-  @Watch("list")
-  onListChange(): void {
-    this.editList = this.list;
+    return this.$store.getters.hasSomeTaskCompleted;
   }
 
   toggleAllTasks(): void {
-    this.editList = this.editList.map((item: ITodoItem) => ({
-      ...item,
-      isCompleted: this.checkedAllTasks,
-    }));
+    this.$store.commit("toggleAllTodoState", this.checkedAllTasks);
   }
 
   removeCompletedTasks(): void {
-    this.editList = this.editList.filter(
-      (item: ITodoItem) => !item.isCompleted
-    );
+    this.$store.commit("clearCompleted");
     this.checkedAllTasks = false;
   }
 
   updateToggleAllTasks(item: ITodoItem): void {
     this._updateTask(item);
-    this.checkedAllTasks = !this.editList.some(
-      (item: ITodoItem) => !item.isCompleted
-    );
+    this.checkedAllTasks = this.$store.getters.areAllTaskChecked;
   }
 
   private _updateTask(newItem: ITodoItem): void {
-    const index = this.editList.findIndex(
-      (item: ITodoItem) => item.id === newItem.id
-    );
-    this.editList[index] = newItem;
-    this.editList = [...this.editList];
+    const payload: ICheckedStatus = {
+      id: newItem.id,
+      checked: newItem.isCompleted,
+    };
+    this.$store.commit("updateTodoToggle", payload);
+  }
+
+  saveItem(item: ITodoItem): void {
+    const payload: IAddItem = {
+      id: item.id,
+      value: item.task,
+    };
+    this.$store.commit("updateTodoValue", payload);
   }
 
   addTask(): void {
     if (this.newTask.length) {
       const item: ITodoItem = {
-        id: `${this.editList.length + 1}`,
+        id: "",
         task: this.newTask,
         isCompleted: false,
       };
-      this.editList = [...this.editList, item];
+      this.$store.commit("addTodo", item);
       this.newTask = "";
     }
   }
 
   removeTask(removeItem: ITodoItem): void {
-    const index = this.editList.findIndex(
-      (item: ITodoItem) => item.id === removeItem.id
-    );
-    this.editList.splice(index, 1);
-    this.editList = [...this.editList];
+    this.$store.commit("removeTodo", removeItem);
   }
 }
 </script>
