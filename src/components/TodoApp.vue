@@ -110,7 +110,7 @@ export default class TodoApp extends Vue {
   addTask(): void {
     if (this.newTask.length) {
       const item: ITodoItem = {
-        id: "",
+        id: `${new Date().getTime()}`,
         task: this.newTask,
         isCompleted: false,
       };
