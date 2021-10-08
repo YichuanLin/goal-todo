@@ -21,7 +21,7 @@
       ref="editInput"
       class="edit"
       v-model.trim="editValue"
-      @keyup.enter="_updateValue"
+      @keyup.enter="$event.target.blur()"
       @blur="_updateValue"
       @keyup.esc="resetItem"
     />
