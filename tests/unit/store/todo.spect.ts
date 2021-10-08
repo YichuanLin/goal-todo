@@ -56,7 +56,7 @@ describe("TodoStoreModule", () => {
     it("addTodo", () => {
       expect(store.state.todoList).toHaveLength(5);
       const payload: ITodoItem = {
-        id: "0",
+        id: "5",
         task: "task #0",
         isCompleted: false,
       };
