@@ -2,6 +2,7 @@
   <div class="todoapp">
     <h1>todos</h1>
     <input
+      type="text"
       class="new-todo"
       placeholder="What needs to be done? "
       ref="newTodo"
@@ -73,7 +74,7 @@ export default class TodoApp extends Vue {
   }
 
   get hasSomeTaskCompleted(): boolean {
-    return this.$store.getters.hasSomeTaskCompleted;
+    return this.filterList.some((item: ITodoItem) => item.isCompleted);
   }
 
   toggleAllTasks(): void {

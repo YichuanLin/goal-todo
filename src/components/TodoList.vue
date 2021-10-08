@@ -12,6 +12,7 @@
         @saveItem="saveItem"
         @removeItem="removeItem"
         @toggleChecked="toggleTask"
+        @changeEditMode="toggleEditMode"
       />
     </li>
   </ul>
@@ -22,7 +23,7 @@ import { Component, Prop, Emit, Watch, Vue } from "vue-property-decorator";
 import { ITodoItem } from "@/models/ITodoItem";
 import { ITodoEditItem } from "@/models/ITodoEditItem";
 import TodoItem from "@/components/TodoItem.vue";
-import { IAddItem, ICheckedStatus } from "@/models/ITodoEdit";
+import { IAddItem, ICheckedStatus, IEditMode } from "@/models/ITodoEdit";
 
 @Component({
   components: {
@@ -42,7 +43,7 @@ export default class TodoList extends Vue {
   }
 
   get isEditListEmpty(): boolean {
-    if (!this.list) {
+    if (!this.editList) {
       return true;
     }
     return this.editList.length === 0;
@@ -50,6 +51,12 @@ export default class TodoList extends Vue {
 
   @Emit("toggleTask")
   toggleTask({ id, checked }: ICheckedStatus): ITodoItem {
+    const index = this.editList.findIndex(
+      (item: ITodoEditItem) => item.id === id
+    );
+    this.editList[index].isChecked = checked;
+    this.editList = [...this.editList];
+
     const toggleItem = this._findItemById(id);
 
     return {
@@ -71,6 +78,14 @@ export default class TodoList extends Vue {
       ...saveItem,
       task: value,
     };
+  }
+
+  toggleEditMode({ mode, id }: IEditMode): void {
+    const index = this.editList.findIndex(
+      (item: ITodoEditItem) => item.id === id
+    );
+    this.editList[index].editMode = mode;
+    this.editList = [...this.editList];
   }
 
   @Watch("list")

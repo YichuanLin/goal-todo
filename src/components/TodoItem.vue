@@ -1,5 +1,5 @@
 <template>
-  <div class="todo-item" :class="_getItemClasses()">
+  <div :data-id="id" class="todo-item" :class="_getItemClasses()">
     <input
       class="toggle"
       type="checkbox"
@@ -7,12 +7,18 @@
       v-model="editChecked"
       @change="toggleChecked"
     />
-    <label class="view" @dblclick.prevent="changeEditMode(true)">
+    <label
+      class="view"
+      @dblclick.prevent="changeEditMode(true)"
+      v-if="!editMode"
+    >
       {{ editValue }}
     </label>
     <input
+      type="text"
+      v-focus
+      v-else
       ref="editInput"
-      autofocus
       class="edit"
       v-model.trim="editValue"
       @keyup.enter="_updateValue"
@@ -25,9 +31,17 @@
 
 <script lang="ts">
 import { Component, Prop, Ref, Emit, Watch, Vue } from "vue-property-decorator";
-import { IAddItem, ICheckedStatus } from "@/models/ITodoEdit";
+import { IAddItem, ICheckedStatus, IEditMode } from "@/models/ITodoEdit";
 
-@Component
+@Component({
+  directives: {
+    focus: {
+      inserted: function (el) {
+        el.focus();
+      },
+    },
+  },
+})
 export default class TodoItem extends Vue {
   @Prop({ type: String }) readonly id!: string;
 
@@ -52,16 +66,15 @@ export default class TodoItem extends Vue {
   }
 
   @Emit("changeEditMode")
-  changeEditMode(mode: boolean): boolean {
+  changeEditMode(mode: boolean): IEditMode {
     if (mode) {
       this.temporalEditValue = this.editValue;
-      // this.editInput.focus();
-      this.$nextTick(() => {
-        this.editInput.focus();
-      });
     }
     this.editMode = mode;
-    return mode;
+    return {
+      id: this.id,
+      mode,
+    };
   }
 
   @Emit("resetItem")

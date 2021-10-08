@@ -7,3 +7,8 @@ export interface ICheckedStatus {
   id: string;
   checked: boolean;
 }
+
+export interface IEditMode {
+  id: string;
+  mode: boolean;
+}

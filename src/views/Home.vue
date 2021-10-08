@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <TodoApp :list="list" :status="status" />
+    <TodoApp :status="status" />
   </div>
 </template>
 

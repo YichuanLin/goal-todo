@@ -10,11 +10,13 @@
     </ul>
     <button
       :class="{ hidden: hideClearButton }"
+      v-show="!hideClearButton"
       class="clear-completed"
       @click="onClearCompletedButtonClick"
     >
       Clear completed
     </button>
+    <span v-show="false"></span>
   </div>
 </template>
 

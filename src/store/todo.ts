@@ -1,5 +1,5 @@
 import { ITodoItem } from "@/models/ITodoItem";
-import { Module, VuexModule, Mutation, Action } from "vuex-module-decorators";
+import { Module, VuexModule, Mutation } from "vuex-module-decorators";
 import { IAddItem, ICheckedStatus } from "@/models/ITodoEdit";
 
 const TASK_STATUS_FILTER = {
@@ -86,10 +86,6 @@ export default class TodoStoreModule extends VuexModule {
 
   get uncompleteTasks(): number {
     return this.todoList.filter((item: ITodoItem) => !item.isCompleted).length;
-  }
-
-  get hasSomeTaskCompleted(): boolean {
-    return this.todoList.some((item: ITodoItem) => item.isCompleted);
   }
 
   get filterTodoList() {
